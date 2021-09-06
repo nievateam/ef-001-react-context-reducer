@@ -16,12 +16,12 @@ Dentro de este artículo, haremos una combinación de esta gestión:
 
 - [Objetivo]()
 - [Outline]()
-- [Objetivo]()
-
-
+- [Desarrollo de la aplicación]()
     - [Preparación de ambiente]()
-    - [Context API (useContext) y estado global]()
-    - [Reducers (useReducer)]()
+    - [Desarrollo de Context]()
+    - [Lectura de usuarios y flujo de componentes]()
+    - [Creación de usuarios y actualización de la lista en el componente]()
+- [](Conclusiones)    
 
 
 # Objetivo
@@ -30,11 +30,11 @@ Crearás un sistema de operación CRUD involucrando un flujo de datos eficiente 
 
 # Outline
 
-## ¿A quién está dirigido este artículo?
+### ¿A quién está dirigido este artículo?
 
 Está dirigido a personas que han aprendido React en un nivel básico y quieren empezar a utilizar de una manera más extensa las funcionalidades en el manejo de datos.
 
-## ¿Qué encontrarás en este articulo?
+### ¿Qué encontrarás en este articulo?
 
 - Preparación de nuestro ambiente básico en React con `react-router-dom`.
 
@@ -42,7 +42,7 @@ Está dirigido a personas que han aprendido React en un nivel básico y quieren 
 
 - Establecer una sección para realizar creación y edición de usuarios. Asimismo, una más para observar una lista de los mismos.
 
-## Lo que vas a aprender
+### Lo que vas a aprender
 
 Al terminar este artículo, serás capaz de:
 
@@ -680,18 +680,29 @@ export default function FormUser() {
         </div>
     )
 }
-
 ```
 
-Examinemos paso a paso este componente:
-
-
-
-Nuestro resultado final, será este:
+Este será nuestro resultado terminado:
 
 ![](./assets/03-form.png)
 
-## Conclusiones
+
+Para aclarar este último componente, lo que hicimos fue:
+
+- Importamos `useState` para el manejo de estado local del componente. Realizamos una desestructuración de arreglos para obtener `user` que funcionará como el estado local y `setUser` para su manipulación de valor.
+
+- Contamos con dos funciones adicionales. `handleChange` que nos permite capturar los datos de los formularios y agregarlos al estado. `setData` que nos permitirá enviar los datos para ser ejecutados por el `dispatch` en `UserState.js`.
+
+- Contar con un formulario que contiene un atributo `onSubmit` para ejecutar el formulario. Y, cada `input` con atributos `name`, dando el nombre del campo de texto.
+
+
+# Conclusiones
+
+Uno de los procesos con más constancia en una aplicación web es el consumo y manejo de datos. Con este artículo, fue posible explorar la estructura de carpetas que debemos realizar, así como el manejo de `Context` con la combinación de un estado global, gestionado por `useReducer`.
+
+Recuerda que la práctica hace al maestro. Ve paso a paso. Con calma.
+
+Te invito a conocer el [repositorio terminado](https://github.com/mikenievacom/escuelafrontend-01-react-context-reducer).
 
 
 
