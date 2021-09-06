@@ -1,6 +1,6 @@
-# Crea y consume elementos en React combinando `useState`, useContext y `useReducer`
+# Crea y consume elementos en React combinando `useState`, `useContext` y `useReducer`
 
-## Introducción
+# Introducción
 
 Cuando desarrollamos bajo la librería de React, detectamos la importancia de fluir eficientemente nuestros datos internos generados desde los componentes y externos que llegan a nuestra aplicación, usualmente desde una API.  
 
@@ -10,6 +10,19 @@ Dentro de este artículo, haremos una combinación de esta gestión:
 
 - `useState` para un manejo interno de datos en un componente o, 
 - `useReducer` combinado con `useContext` para involucrar un estado global sin tener que trasladar datos con `props`.
+
+
+# Índice
+
+- [Objetivo]()
+- [Outline]()
+- [Objetivo]()
+
+
+    - [Preparación de ambiente]()
+    - [Context API (useContext) y estado global]()
+    - [Reducers (useReducer)]()
+
 
 # Objetivo
 
@@ -36,6 +49,15 @@ Al terminar este artículo, serás capaz de:
 - Aplicar tres hooks de React, permitiéndote fluir datos por toda la aplicación.
 
 - Extraer los datos externos desde una API externa, con React.
+
+# Desarrollo de la aplicación
+
+Para la construcción de la aplicación, la dividiremos en 4 pasos:
+
+- Preparación de ambiente.
+- Desarrollo de `Context`.
+- Lectura de usuarios y flujo hacia componentes.
+- Creación de usuarios y actualización de la lista en el componente.
 
 ## Preparación de ambiente
 
@@ -165,11 +187,6 @@ import React, { useEffect, useContext } from 'react'
 
 export default function ListUsers() {
 
-    // 1. GESTIÓN DE CONTEXTO
-
-    // 2. LLAMADA ASÍNCRONA CON USEEFFECT
-
-    // 3. RETORNO
     return (
         <div>
             <h1>Listado de usuarios</h1>
