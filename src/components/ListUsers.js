@@ -25,7 +25,11 @@ export default function ListUsers() {
             {
                 users.map((e) => {
                     return (
-                        <p key={e.id}>{e.first_name}</p>
+                        <div key={e.id}>
+                            <p>{e.first_name}</p>
+                            <p>{e.last_name}</p>
+                            <p>{e.email}</p>
+                        </div>
                     )
                 })
             }            
