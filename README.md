@@ -1,70 +1,682 @@
-# Getting Started with Create React App
+# Crea y consume elementos en React combinando `useState`, useContext y `useReducer`
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Introducción
 
-## Available Scripts
+Cuando desarrollamos bajo la librería de React, detectamos la importancia de fluir eficientemente nuestros datos internos generados desde los componentes y externos que llegan a nuestra aplicación, usualmente desde una API.  
 
-In the project directory, you can run:
+Dependiendo de la situación, aplicamos un Hook específico para esta gestión.
 
-### `npm start`
+Dentro de este artículo, haremos una combinación de esta gestión:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- `useState` para un manejo interno de datos en un componente o, 
+- `useReducer` combinado con `useContext` para involucrar un estado global sin tener que trasladar datos con `props`.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+# Objetivo
 
-### `npm test`
+Crearás un sistema de operación CRUD involucrando un flujo de datos eficiente a través de `useState`, `useContext` y `useReducer`, incluyendo la comunicación a través de un API.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# Outline
 
-### `npm run build`
+## ¿A quién está dirigido este artículo?
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Está dirigido a personas que han aprendido React en un nivel básico y quieren empezar a utilizar de una manera más extensa las funcionalidades en el manejo de datos.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## ¿Qué encontrarás en este articulo?
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- Preparación de nuestro ambiente básico en React con `react-router-dom`.
 
-### `npm run eject`
+- Generaremos un servidor sencillo con `json-server`.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+- Establecer una sección para realizar creación y edición de usuarios. Asimismo, una más para observar una lista de los mismos.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Lo que vas a aprender
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+Al terminar este artículo, serás capaz de:
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+- Aplicar tres hooks de React, permitiéndote fluir datos por toda la aplicación.
 
-## Learn More
+- Extraer los datos externos desde una API externa, con React.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Preparación de ambiente
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Crea una aplicación con React.
 
-### Code Splitting
+```shell
+$ mkdir react-exercise
+$ cd react-exercise
+$ npx create-react-app .
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Posteriormente, necesitaremos instalar dos dependencias:
 
-### Analyzing the Bundle Size
+```shell
+npm install axios 
+npm install -g json-server
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+`axios` será utilizado para el consumo de datos y `json-server` para la creación de un servidor local con `fake data`, que podremos usar a través de un puerto específico.
 
-### Making a Progressive Web App
+Ahora bien, trabajemos directamente con el directorio. Generaremos estos documentos y archivos. Quitaremos algunos archivos también.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Te debe quedar de esta forma:
 
-### Advanced Configuration
+```
+|- node_modules/
+|- public/
+|- src/
+    |- components/
+        |- FormUser.js
+        |- ListUsers.js
+    |- config/
+        |- axios.js
+    |- context/
+        |- UserContext.js
+        |- UserReducer.js
+        |- UserState.js
+    |- App.js
+    |- index.css
+    |- index.js
+|- .env
+|- .gitignore
+|- db.json
+|- package-lock.json
+|- package.json
+|- README.md
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Dentro de estos archivos, consideramos:
 
-### Deployment
+- Una carpeta `components`, que se incluyen 3 archivos. En estos, trabajaremos el desarrollo de la aplicación y consumo de datos.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- Una carpeta `config`el cual incluye un `axios.js`. Aquí, al momento de comunicarnos a través del API, estableceremos la configuración específica para nuestras llamadas.
 
-### `npm run build` fails to minify
+- Una carpeta `context`, en el cual, a través de la misma, estructuraremos nuestro **"Context"**. Asimismo, desarrollaremos un `UserReducer` que contará con la gestión del estado global (`UserState`), para ser transferido a los componentes a través del contexto.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Finalmente, unos archivos nuevos encontrados fuera de la carpeta `src`.      
+
+- `db.json`. Un archivo con el cual, a través de la dependencia de `json-server`, simularemos la transacción de una base de datos simple.
+
+Insertamos ahí mismo:
+
+`db.json`
+
+```json
+{
+  "users": [
+    {
+      "id": 1,
+      "first_name": "Mike",
+      "last_name": "Nieva",
+      "email": "m@mikenieva.com"
+    },
+    {
+      "id": 2,
+      "first_name": "Adrián",
+      "last_name": "Martínez",
+      "email": "adrian@gmail.com"
+    }
+  ]
+}
+```
+
+- `.env`. Nuestras variables de entorno. Establecemos dentro:
+
+```
+REACT_APP_BACKEND_URL="http://localhost:3004"
+```
+
+Listo. Levantamos nuestra aplicación a través de dos terminales separadas. El primero alzará `React`, el segundo nuestro servidor local.
+
+```shell
+$ npm run start
+```
+
+```shell
+$ json-server db.json --port 3004
+```
+
+Comencemos a desarrollar.
+
+## Desarrollo de `Context`
+
+Primero, establecemos nuestra `App.js` con esta configuración.
+
+```javascript
+
+import './App.css'
+import ListUsers from './components/ListUsers'
+
+function App() {
+  return (
+    <>
+        <ListUsers />     
+    </>
+  );
+}
+
+export default App;
+
+```
+
+Después, accedemos a `ListUsers.js`. Dejamos muy sencilla la aplicación por ahora para no obtener errores.
+
+```javascript
+import React, { useEffect, useContext } from 'react'
+
+export default function ListUsers() {
+
+    // 1. GESTIÓN DE CONTEXTO
+
+    // 2. LLAMADA ASÍNCRONA CON USEEFFECT
+
+    // 3. RETORNO
+    return (
+        <div>
+            <h1>Listado de usuarios</h1>
+        </div>
+    )
+}
+```
+
+Bien. Con esto listo, vamos a proceder a desarrollar nuestro contexto y estado global.
+
+> `React Context` es un método que permite transferir `props` de un componente padre a sus hijos, a través del almacenamiento de datos en un `store`, sin realizarlo de manera manual, por nivel. En una explicación más general, cualquier componente hijo puede acceder a estos valores mientras esté situado debajo del componente padre.
+
+Accedemos a `UserContext.js` y preparamos nuestro `Context`.
+
+```javascript
+import { createContext } from 'react'
+
+const UserContext = createContext()
+
+export default UserContext
+```
+
+Ahora, accedemos a `UserState.js` y dentro, preparamos nuestro estado inicial, transferido a través de un `Provider` en nuestro `Context`.
+
+```javascript
+
+import { useReducer } from 'react'
+import UserContext from './UserContext'
+
+const UserState = (props) => {
+
+    const initialState = {
+        users: []
+    }
+
+    return (
+        <UserContext.Provider
+            value={{
+                users: initialState.users
+            }}
+        >
+            {props.children}
+        </UserContext.Provider>
+    )
+
+}
+
+export default UserState
+
+```
+
+Bien. Ahora accedemos a `App.js` y anclamos `UserState` como el componente padre hacia el resto de la aplicación.
+
+```javascript
+
+import './App.css';
+import ListUsers from './components/ListUsers'
+
+import UserState from './context/UserState'; // ⬅️
+
+function App() {
+  return (
+    <>
+      <UserState>
+        <FormUser />  /* ⬅️ */
+        <ListUsers />     
+      </UserState>
+    </>
+  );
+}
+
+export default App;
+```
+
+El resultado será nuestra página con el valor del contexto ya disponible para los componentes.
+
+![](./assets/01-listado.png)
+
+> En caso de que no lo tengas instalado, utilizo `React Developer Tools` para el navegador de Firefox. Aunque, también está disponible para Google Chrome.
+
+Excelente. Ahora, hagamos un último ajuste dentro de `ListUsers.js` para bajar los datos desde el contexto.
+
+```javascript
+import React, { useEffect, useContext } from 'react'
+import UserContext from '../context/UserContext'
+
+export default function ListUsers() {
+
+    const ctx = useContext(UserContext)  // ⬅️
+    const { users } = ctx // ⬅️
+
+    return ( // ⬅️
+        <div>
+            <h1>Listado de usuarios</h1>
+
+            {
+                users.map((e) => {
+                    return (
+                        <div key={e.id}>
+                            <p>{e.first_name}</p>
+                            <p>{e.last_name}</p>
+                            <p>{e.email}</p>
+                        </div>
+                    )
+                })
+            }            
+        </div>
+    )
+
+}
+
+
+```
+
+Entre estos últimos cambios, destacamos:
+
+- El uso de `useContext` para consumir el estado directamente en el componente.
+
+- Realizamos una desestructuración de objetos con el valor de `users`, el cual es un arreglo vacío.
+
+Una vez establecido esto, ahora trabajemos nuestro estado global y usemos el concepto de `reducer` para gestionarlo.
+
+## Lectura de usuarios y flujo hacia componentes
+
+En esta sección, nos conectaremos a nuestro servidor local a través `axios`, obtendremos los usuarios y los guardamos en nuestro estado global (`globalState`). Finalmente, fluiremos los datos al componente para su consumo y muestra.
+
+Comencemos configurando el archivo que creamos llamado `axios.js`, el cual establecerá a través de la variable de entorno que creamos anteriormente, la URL base para las llamadas API.
+
+```javascript
+import axios from 'axios'
+
+const clientAxios = axios.create({
+    baseURL: process.env.REACT_APP_BACKEND_URL
+})
+
+export default clientAxios
+```
+
+Listo. Accedamos a nuestro `UserState.js` y agregamos:
+
+```javascript
+
+import { useReducer } from 'react' // ⬅️
+
+import UserContext from './UserContext'
+import UserReducer from './UserReducer' // ⬅️
+import clientAxios from './../config/axios' // ⬅️
+
+
+const UserState = (props) => {
+
+    const initialState = {
+        users: []
+    }
+
+    const [globalState, dispatch] = useReducer(UserReducer, initialState) // ⬅️
+
+    const readUsers = async () => { // ⬅️
+
+        try {
+            const res = await clientAxios.get("/users")
+
+            dispatch({
+                type: "READ_USERS",
+                payload: res.data
+            })
+
+        } catch (error) {
+            console.log(error)
+        }
+
+    }
+
+    return (
+        <UserContext.Provider
+            value={{
+                users: globalState.users,
+                readUsers   // ⬅️
+            }}
+        >
+            {props.children}
+        </UserContext.Provider>
+    )
+
+}
+
+export default UserState
+
+
+```
+
+Considera varios puntos aquí:
+
+- Hacemos la importación de nuestro `UserReducer.js` (aún no trabajamos) y el archivo de `axios.js` a partir del nombre de `clientAxios`.
+
+- Utilizamos el hook de `useReducer` para permitir la creación de un estado global, gestionado por una función llamada `reducer`, la cual a través de las acciones y el disparador `dispatch` permitirán su manipulación.
+
+- Creamos una función llamada `readUsers`. Dentro, haremos una llamada con `axios` con el método GET y obtendremos los usuarios. Destacamos que es una función asíncrona, por lo tanto `async-await` son imprescindibles.
+
+- Una vez obtenida la respuesta, en caso de que todo haya sucedido correctamente aplicamos `dispatch` donde le pasaremos como argumento un `action`, el cual es un objeto que contiene dos propiedades:
+    - `type.` El nombre del tipo de acción que ejecutaremos en el `reducer`.
+    - `payload.` Información que enviaremos al reducer, con el cual, manipularemos el estado global.
+
+- Finalmente, en el retorno, añadimos `readUsers` al atributo de `value` para que pueda ser consumida por todos los componentes.
+
+Bien. Ahora, hagamos el cambio en el `reducer:`
+
+
+`UserReducer.js`
+
+```javascript
+const reducer = (globalState, action) => {
+
+    switch (action.type) {
+
+        case "READ_USERS":
+
+            return {
+                ...globalState,
+                users: action.payload
+            }
+    
+    }
+
+}
+
+export default reducer
+```
+
+El `reducer` es una función el cual recibe dos parámetros:
+
+- `globalState.` El cual es el estado actual en el cual se encuentra nuestro estado. 
+
+- `action.` Es el objeto que viene de nuestro `dispatch`, el cual comprende los dos valores que comentamos anteriormente, `type` y `payload`.
+
+Observa con cuidado que realizamos un `switch` y este mismo, evalúa el `action.type` para identificar cómo vamos a manipular el estado global. Identificamos `READ_USERS` y entonces realizamos un retorno para hacer las modificaciones.
+
+Con esto terminado, estamos listos para trabajar el componente. Vamos a `ListUsers.js`
+
+```javascript
+import React, { useEffect, useContext } from 'react'
+import UserContext from '../context/UserContext'
+
+export default function ListUsers() {
+
+    const ctx = useContext(UserContext)
+    const { users, readUsers } = ctx // ⬅️
+
+    useEffect(() => { // ⬅️
+
+        const getResponse = async () => {
+            
+            await readUsers()
+            return 
+        }
+
+        getResponse()
+
+    }, [])
+
+    return (
+        <div>
+            <h1>Listado de usuarios</h1>
+            {
+                users.map((e) => {
+                    return (
+                        <p key={e.id}>{e.first_name}</p>
+                    )
+                })
+            }            
+        </div>
+    )
+}
+
+```
+
+El cambio principal realizado es a través de `useEffect`, el cual, de manera asíncrona y una vez que el componente ha sido cargado por primera vez, realiza la invocación de `getResponse`.
+
+`getResponse` es obtenido a través del contexto y permite la obtención de los datos a través de la comunicación con nuestro servidor local.
+
+Si todo sucedió correctamente, obtendremos esta resultado:
+
+![](./assets/02-listado.png)
+
+## Creación de usuarios y actualización de la lista en el componente
+
+Como último paso, vamos a realizar la creación de usuarios a través del API.
+
+Primero, anexamos el componente `FormUser.js` a nuestro `App.js`:
+
+```javascript
+import './App.css';
+
+import FormUser from './components/FormUser'
+import ListUsers from './components/ListUsers'
+
+import UserState from './context/UserState';
+
+
+function App() {
+  return (
+    <>
+      <UserState>
+        <FormUser />
+        <ListUsers />     
+      </UserState>
+    </>
+  );
+}
+
+export default App;
+
+```
+
+
+Hacemos un cambio en nuestro `UserState.js`:
+
+```javascript
+
+import { useReducer } from 'react'
+
+import UserContext from './UserContext'
+import UserReducer from './UserReducer'
+
+import clientAxios from './../config/axios'
+
+const UserState = (props) => {
+
+    const initialState = {
+        users: []
+    }
+
+    const [globalState, dispatch] = useReducer(UserReducer, initialState)
+
+    const addUser = async (data) => {
+
+        const { first_name, last_name, email } = data
+
+        try {
+            const res = await clientAxios.post("/users", { first_name, last_name, email })
+
+            dispatch({
+                type: "ADD_USER",
+                payload: res.data
+            })
+
+        } catch (error) {
+            console.log(error)
+        }
+
+    }
+
+    const readUsers = async () => {
+
+        try {
+            const res = await clientAxios.get("/users")
+
+            dispatch({
+                type: "READ_USERS",
+                payload: res.data
+            })
+
+        } catch (error) {
+            console.log(error)
+        }
+
+    }
+
+    return (
+        <UserContext.Provider
+            value={{
+                users: globalState.users,
+                addUser,
+                readUsers
+            }}
+        >
+            {props.children}
+        </UserContext.Provider>
+    )
+
+}
+
+export default UserState
+
+
+```
+
+Bien. Vayamos por partes.
+
+- Generamos una nueva función llamada `addUser`. 
+    - Ejecutamos como parámetro un valor `data` que contendrá los datos reales que vengan del formulario del componente. 
+    - Realizamos una desestructuración de objetos de los valores que vienen del formulario.
+    - Llamamos con un método POST y usando los datos disponibles del formulario, a nuestro servidor local para crear un nuevo usuario.
+    - Realizado esto, ejecutamos un `dispatch` el cual realice un ajuste dentro de nuestro `reducer`.
+
+- Esta función `addUser` la incorporamos dentro de nuestro retorno, en los atributos de `value`.
+
+Entramos a `UserReducer.js` y hacemos el ajuste:
+
+```javascript
+const reducer = (globalState, action) => {
+
+    switch (action.type) {
+
+        case "READ_USERS":
+
+            return {
+                ...globalState,
+                users: action.payload
+            }
+        
+        case "ADD_USER":
+
+            return {
+                ...globalState,
+                users: [...globalState.users, action.payload]
+            }
+
+    }
+
+}
+
+export default reducer
+
+```
+
+Para cerrar, entremos al componente de `FormUser.js`
+
+```javascript
+import React, { useState, useContext } from 'react'
+import UserContext from '../context/UserContext'
+
+export default function FormUser() {
+
+    const ctx = useContext(UserContext)
+
+    const { addUser } = ctx
+
+    const [user, setUser] = useState({
+        first_name: "",
+        last_name: "",
+        email: ""
+    })
+
+
+    const handleChange = (e) => {
+
+        setUser({
+            ...user,
+            [e.target.name]: e.target.value
+        })
+
+    }
+
+    const sendData = (e) => {
+        e.preventDefault()
+        addUser(user)
+    }
+
+
+    return (
+        <div>
+            <h1>Crea un usuario</h1>
+
+            <form onSubmit={ (event) => { sendData(event) } }>
+                <h2>Escribe el nombre</h2>
+                <input 
+                    name="first_name"
+                    onChange={ event => { handleChange(event) }}
+                />
+                <h2>Escribe el apellido</h2>
+                <input 
+                    name="last_name"
+                    onChange={ event => { handleChange(event) }}
+                />
+
+                <h2>Escribe tu correo</h2>
+                <input 
+                    name="email"
+                    onChange={ event => { handleChange(event) }}
+                />
+
+                <button
+                    type="submit"
+                >
+                    Crear usuario
+                </button>
+
+            </form>
+
+        </div>
+    )
+}
+
+```
+
+Examinemos paso a paso este componente:
+
+
+
+Nuestro resultado final, será este:
+
+![](./assets/03-form.png)
+
+## Conclusiones
+
+
+
+
+
